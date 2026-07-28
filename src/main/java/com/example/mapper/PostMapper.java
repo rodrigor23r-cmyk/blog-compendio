@@ -36,8 +36,8 @@ public interface PostMapper {
     @Mapping(target = "id", ignore = true) // El ID lo generará MySQL
     @Mapping(target = "fechaCreacion", ignore = true) // Lo asignará el @PrePersist
     @Mapping(target = "comentarios", ignore = true) // Empieza sin comentarios
-    @Mapping(target = "autor", source = "autorId")
-    @Mapping(target = "categorias", source = "categoriaIds")
+    @Mapping(target = "autor", source = "autorId", ignore = true) // Lo asignamos en el Service
+    @Mapping(target = "categorias", source = "categoriaIds", ignore = true) // Lo asignamos en el Service
     Post toPostEntity(PostRequestDTO requestDTO);
 
     // Truco de magia JPA: Si solo tenemos el ID del autor, creamos una entidad 

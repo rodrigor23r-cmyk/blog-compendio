@@ -2,6 +2,8 @@ package com.example.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import com.example.dto.PostRequestDTO;
 import com.example.dto.PostResponseDTO;
 
@@ -18,5 +20,8 @@ public interface PostService {
     PostResponseDTO obtenerPorId(Long id);
 
     PostResponseDTO actualizarPost(Long id, @Valid PostRequestDTO requestDTO);
+
+    Page<PostResponseDTO> obtenerPostsPaginados(int numeroPagina, int tamanoPagina, String ordenarPor,
+            String direccion);
 
 }

@@ -1,7 +1,6 @@
 package com.example.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.dto.PostRequestDTO;
@@ -28,8 +28,15 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("posts")
-    public ResponseEntity<List<PostResponseDTO>> listarPosts() {
-        List<PostResponseDTO> posts = postService.obtenerTodos();
+    public ResponseEntity<Page<PostResponseDTO>> listarPostsPaginados(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "fechaCreacion") String sort,
+            @RequestParam(defaultValue = "DESC") String dir) {
+        
+        Page<PostResponseDTO> posts = postService.obtenerPostsPaginados(
+                page, size, sort, dir);
+
         return ResponseEntity.ok(posts);
     }
 
@@ -40,20 +47,20 @@ public class PostController {
     }
 
     @GetMapping("posts/{id}")
-public ResponseEntity<PostResponseDTO> obtenerPorId(@PathVariable Long id) {
-    return ResponseEntity.ok(postService.obtenerPorId(id));
-}
+    public ResponseEntity<PostResponseDTO> obtenerPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(postService.obtenerPorId(id));
+    }
 
-@PutMapping("posts/{id}")
-public ResponseEntity<PostResponseDTO> actualizarPost(
-        @PathVariable Long id, 
-        @Valid @RequestBody PostRequestDTO requestDTO) {
-    return ResponseEntity.ok(postService.actualizarPost(id, requestDTO));
-}
+    @PutMapping("posts/{id}")
+    public ResponseEntity<PostResponseDTO> actualizarPost(
+            @PathVariable Long id,
+            @Valid @RequestBody PostRequestDTO requestDTO) {
+        return ResponseEntity.ok(postService.actualizarPost(id, requestDTO));
+    }
 
-@DeleteMapping("posts/{id}")
-public ResponseEntity<Void> eliminarPost(@PathVariable Long id) {
-    postService.eliminarPost(id);
-    return ResponseEntity.noContent().build(); // Devuelve 204 No Content
-}
+    @DeleteMapping("posts/{id}")
+    public ResponseEntity<Void> eliminarPost(@PathVariable Long id) {
+        postService.eliminarPost(id);
+        return ResponseEntity.noContent().build(); // Devuelve 204 No Content
+    }
 }
