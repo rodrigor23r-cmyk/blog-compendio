@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Categoria
+ * Categoria, no se incluye la lista de posts para evitar recursividad infinita al serializar a JSON.
  */
 @Entity
 @Table(name = "categorias")
