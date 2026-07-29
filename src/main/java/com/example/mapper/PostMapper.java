@@ -36,7 +36,7 @@ public interface PostMapper {
     @Mapping(target = "id", ignore = true) // El ID lo generará MySQL
     @Mapping(target = "fechaCreacion", ignore = true) // Lo asignará el @PrePersist
     @Mapping(target = "comentarios", ignore = true) // Empieza sin comentarios
-    @Mapping(target = "autor", source = "autorId", ignore = true) // Lo asignamos en el Service
+    @Mapping(target = "autor", ignore = true) // Le decimos a MapStruct: "Tranquilo, de este me encargo yo en el Service"
     @Mapping(target = "categorias", source = "categoriaIds", ignore = true) // Lo asignamos en el Service
     Post toPostEntity(PostRequestDTO requestDTO);
 
@@ -51,6 +51,6 @@ public interface PostMapper {
     // Lo mismo para enlazar las categorías por ID
     default Categoria mapIdToCategoria(Long id) {
         if (id == null) return null;
-        return Categoria.builder().id(id).build();
+        return new Categoria(id, null); // Usamos el constructor de Categoria
     }
 }

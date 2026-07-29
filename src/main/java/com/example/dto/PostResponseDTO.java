@@ -10,5 +10,6 @@ public record PostResponseDTO(
     String fotoUrl,
     LocalDateTime fechaCreacion,
     UsuarioResponseDTO autor,
+    Boolean esPublico,
     Set<String> categorias
 ) {}

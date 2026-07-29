@@ -1,5 +1,6 @@
 package com.example.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -22,6 +23,6 @@ public interface PostService {
     PostResponseDTO actualizarPost(Long id, @Valid PostRequestDTO requestDTO);
 
     Page<PostResponseDTO> obtenerPostsPaginados(int numeroPagina, int tamanoPagina, String ordenarPor,
-            String direccion);
+            String direccion, Long categoriaId, LocalDateTime fechaInicio, Boolean soloMisPosts);
 
 }

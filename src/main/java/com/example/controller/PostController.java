@@ -1,6 +1,9 @@
 package com.example.controller;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,10 +35,13 @@ public class PostController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "fechaCreacion") String sort,
-            @RequestParam(defaultValue = "DESC") String dir) {
-        
+            @RequestParam(defaultValue = "DESC") String dir,
+            @RequestParam(required = false, name = "cat") Long categoriaId,
+            @RequestParam(required = false, name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fechaInicio,
+            @RequestParam(required = false, name = "owner") Boolean soloMisPosts) {
+            
         Page<PostResponseDTO> posts = postService.obtenerPostsPaginados(
-                page, size, sort, dir);
+                page, size, sort, dir, categoriaId, fechaInicio, soloMisPosts);
 
         return ResponseEntity.ok(posts);
     }

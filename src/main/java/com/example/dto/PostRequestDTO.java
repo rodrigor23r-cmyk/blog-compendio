@@ -15,9 +15,9 @@ public record PostRequestDTO(
     String cuerpo,
     
     String fotoUrl,
-    
-    @NotNull(message = "El ID del autor es obligatorio")
-    Long autorId,
+
+    @NotNull(message = "El atributo de visibilidad es obligatorio")
+    Boolean esPublico,
     
     Set<Long> categoriaIds
 ) {}

@@ -57,6 +57,11 @@ public class Post {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario autor;
 
+    // Atributo de visibilidad
+    @Builder.Default
+    @Column(name = "es_publico", nullable = false, columnDefinition = "BIT(1) DEFAULT 1")
+    private Boolean esPublico = true; // Por defecto, los posts son públicos
+
     // Relación 1:N con Comentarios. Si borras un post, se borran sus comentarios.
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comentario> comentarios;

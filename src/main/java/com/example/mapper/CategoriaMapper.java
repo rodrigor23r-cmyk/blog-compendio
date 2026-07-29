@@ -15,3 +15,4 @@ public interface CategoriaMapper {
     @Mapping(target = "id", ignore = true)
     Categoria toEntity(CategoriaRequestDTO requestDTO);
 }
+            
