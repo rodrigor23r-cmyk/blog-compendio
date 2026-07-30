@@ -27,13 +27,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
-    @GetMapping("posts")
+    @GetMapping
     public ResponseEntity<Page<PostResponseDTO>> listarPostsPaginados(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -49,7 +49,7 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    @PostMapping(name = "posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<PostResponseDTO> crearPost(
         @Valid @RequestPart("post") PostRequestDTO requestDTO,
         @RequestPart(value = "imagen", required = false) MultipartFile imagen
@@ -58,19 +58,19 @@ public class PostController {
         return new ResponseEntity<>(nuevoPost, HttpStatus.CREATED);
     }
 
-    @GetMapping("posts/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<PostResponseDTO> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(postService.obtenerPorId(id));
     }
 
-    @PutMapping("posts/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<PostResponseDTO> actualizarPost(
             @PathVariable Long id,
             @Valid @RequestBody PostRequestDTO requestDTO) {
         return ResponseEntity.ok(postService.actualizarPost(id, requestDTO));
     }
 
-    @DeleteMapping("posts/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPost(@PathVariable Long id) {
         postService.eliminarPost(id);
         return ResponseEntity.noContent().build(); // Devuelve 204 No Content

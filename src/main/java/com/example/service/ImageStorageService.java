@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.exception.BadRequestException;
+import com.example.exception.FileStorageException;
+
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -42,7 +45,7 @@ public class ImageStorageService {
         // 1. RESTRINGIR: Solo archivos de imagen
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("Solo se permiten archivos de imagen (JPG, PNG, etc.)");
+            throw new BadRequestException("Solo se permiten archivos de imagen (JPG, PNG, etc.)");
         }
 
         // 2. SANITIZAR: Limpiar el nombre original por si contiene caracteres extraños o rutas (../)
@@ -63,7 +66,7 @@ public class ImageStorageService {
             
             return nuevoNombreArchivo; // Devolvemos el nombre seguro para guardarlo en la BBDD
         } catch (IOException e) {
-            throw new RuntimeException("Fallo al guardar el archivo " + nuevoNombreArchivo, e);
+            throw new FileStorageException("Fallo al guardar el archivo " + nuevoNombreArchivo, e);
         }
     }
 
@@ -73,7 +76,7 @@ public class ImageStorageService {
             Files.deleteIfExists(file);
         } catch (IOException e) {
             // Aquí puedes usar un logger para registrar que no se pudo borrar el archivo
-            System.err.println("No se pudo borrar la imagen huérfana: " + nombreArchivo);
+            System.err.println("No se pudo borrar la imagen huérfana: " + nombreArchivo + " - " + e.getMessage());
         }
     }
 }

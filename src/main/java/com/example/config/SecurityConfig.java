@@ -43,28 +43,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Activamos la configuración CORS que definimos abajo
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // 2. Desactivamos CSRF (necesario para APIs REST con POST/PUT/DELETE)
-            .csrf(csrf -> csrf.disable())
-            
-            // MUY IMPORTANTE: Le decimos a Spring que no guarde sesiones en memoria (STATELESS)
-            // porque cada petición deberá traer su propio token
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            
-            // Reglas de acceso a las rutas
-            .authorizeHttpRequests(auth -> auth
-                // Rutas públicas: login y registro
-                .requestMatchers("/api/auth/**").permitAll()
-                // Permitimos a cualquiera LEER (GET) posts, comentarios y categorías
-                .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
-                // Cualquier otra petición (POST, PUT, DELETE) requiere estar autenticado con token
-                .anyRequest().authenticated()
-            );
+                // 1. Activamos la configuración CORS que definimos abajo
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-        // Añadimos nuestro filtro JWT justo antes del filtro por defecto de Spring Security
+                // 2. Desactivamos CSRF (necesario para APIs REST con POST/PUT/DELETE)
+                .csrf(csrf -> csrf.disable())
+
+                // MUY IMPORTANTE: Le decimos a Spring que no guarde sesiones en memoria
+                // (STATELESS)
+                // porque cada petición deberá traer su propio token
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // Reglas de acceso a las rutas
+                .authorizeHttpRequests(auth -> auth
+                        // Rutas públicas: login y registro
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // Permitimos a cualquiera LEER (GET) posts, comentarios y categorías
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categorias/**").permitAll()
+                        .requestMatchers("/api/uploads/posts/**").permitAll() // ¡AQUÍ! Hacemos públicas las fotos
+                        // Cualquier otra petición (POST, PUT, DELETE) requiere estar autenticado con
+                        // token
+                        .anyRequest().authenticated());
+
+        // Añadimos nuestro filtro JWT justo antes del filtro por defecto de Spring
+        // Security
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -81,7 +84,8 @@ public class SecurityConfig {
         // Permitimos todos los métodos HTTP que usaremos en las operaciones CRUD
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        // Permitimos las cabeceras estándar y la de Authorization para cuando pongamos JWT
+        // Permitimos las cabeceras estándar y la de Authorization para cuando pongamos
+        // JWT
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
 
         // Permitimos enviar credenciales/cookies si fuera necesario
