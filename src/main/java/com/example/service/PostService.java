@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.dto.PostRequestDTO;
 import com.example.dto.PostResponseDTO;
@@ -14,7 +15,7 @@ public interface PostService {
 
     List<PostResponseDTO> obtenerTodos();
 
-    PostResponseDTO crearPost(PostRequestDTO requestDTO);
+    PostResponseDTO crearPost(PostRequestDTO requestDTO, MultipartFile imagen);
 
     void eliminarPost(Long id);
 

@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.dto.PostRequestDTO;
 import com.example.dto.PostResponseDTO;
@@ -40,23 +41,28 @@ public class PostServiceImpl implements PostService {
     private final PostMapper postMapper;
     private final CategoriaRepository categoriaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ImageStorageService imageStorageService;
 
     private void verificarAutorOAdmin(Post post) {
-       // 1. Obtenemos el "username" del usuario que está haciendo la petición (el dueño del Token)
+        // 1. Obtenemos el "username" del usuario que está haciendo la petición (el
+        // dueño del Token)
         String usuarioAutenticado = SecurityContextHolder.getContext().getAuthentication().getName();
-        
+
         // 2. Obtenemos los roles del usuario autenticado
         boolean esAdmin = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-            .stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                .stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-        // 3. LA MAGIA: Comparamos. Si no es el autor Y TAMPOCO es administrador... ¡Bloqueo!
-        // (Asumiendo que tu entidad Post tiene una relación con Usuario llamada "autor")
+        // 3. LA MAGIA: Comparamos. Si no es el autor Y TAMPOCO es administrador...
+        // ¡Bloqueo!
+        // (Asumiendo que tu entidad Post tiene una relación con Usuario llamada
+        // "autor")
         if (!post.getAutor().getUsername().equals(usuarioAutenticado) && !esAdmin) {
             throw new AccessDeniedException("No tienes permiso para editar un post que no es tuyo");
         }
     }
 
-    // Este método no tiene llamada desde el Controller, pero lo dejamos para futuras implementaciones
+    // Este método no tiene llamada desde el Controller, pero lo dejamos para
+    // futuras implementaciones
     @Override
     @Transactional(readOnly = true)
     public List<PostResponseDTO> obtenerTodos() {
@@ -67,7 +73,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional
-    public PostResponseDTO crearPost(PostRequestDTO requestDTO) {
+    public PostResponseDTO crearPost(PostRequestDTO requestDTO, MultipartFile imagen) {
 
         // 1. Sacamos quién es el usuario que está haciendo la petición con su token
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -90,11 +96,30 @@ public class PostServiceImpl implements PostService {
             nuevoPost.setEsPublico(requestDTO.esPublico());
         }
 
-        // 5. Guardamos en MySQL (JPA ejecutará el INSERT)
-        Post postGuardado = postRepository.save(nuevoPost);
+        // ¡AQUÍ GUARDAMOS LA IMAGEN!
+        String nombreSeguro = null;
+        if (imagen != null && !imagen.isEmpty()) {
+            nombreSeguro = imageStorageService.guardarImagen(imagen);
+            nuevoPost.setFotoUrl(nombreSeguro);
+        }
 
-        // 6. Convertimos la Entidad guardada de nuevo a Record DTO para devolverla
-        return postMapper.toPostResponseDTO(postGuardado);
+        try {
+
+            // 5. Guardamos en MySQL (JPA ejecutará el INSERT)
+            Post postGuardado = postRepository.save(nuevoPost);
+
+            // 6. Convertimos la Entidad guardada de nuevo a Record DTO para devolverla
+            return postMapper.toPostResponseDTO(postGuardado);
+        } catch (Exception e) {
+            // Si la base de datos falla, borramos el archivo físico para no dejar basura
+            if (nombreSeguro != null) {
+                imageStorageService.eliminarImagen(nombreSeguro);
+            }
+            // Volvemos a lanzar la excepción para que Spring devuelva un error 500 al
+            // frontend
+            throw e;
+        }
+
     }
 
     // Obtener un post por su ID
@@ -140,7 +165,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void eliminarPost(Long id) {
-        
+
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Post no encontrado con id: " + id));
 
@@ -166,7 +191,6 @@ public class PostServiceImpl implements PostService {
             esAdmin = auth.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         }
-        
 
         // 2. Configuramos la dirección del ordenamiento (ASC o DESC)
         Sort sort = direccion.equalsIgnoreCase(Sort.Direction.ASC.name())
@@ -178,7 +202,8 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(numeroPagina, tamanoPagina, sort);
 
         // 4. Crear la Specification con los filtros
-        Specification<Post> spec = PostSpecification.conFiltrosDinamicos(username, esAdmin, categoriaId, fechaInicio, soloMisPosts);
+        Specification<Post> spec = PostSpecification.conFiltrosDinamicos(username, esAdmin, categoriaId, fechaInicio,
+                soloMisPosts);
 
         // 5. Buscamos en la base de datos
         Page<Post> postsPaginados = postRepository.findAll(spec, pageable);
@@ -187,6 +212,4 @@ public class PostServiceImpl implements PostService {
         return postsPaginados.map(postMapper::toPostResponseDTO);
     }
 
-   
 }
-

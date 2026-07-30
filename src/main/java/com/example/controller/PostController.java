@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.dto.PostRequestDTO;
 import com.example.dto.PostResponseDTO;
@@ -46,9 +49,12 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    @PostMapping("posts")
-    public ResponseEntity<PostResponseDTO> crearPost(@Valid @RequestBody PostRequestDTO requestDTO) {
-        PostResponseDTO nuevoPost = postService.crearPost(requestDTO);
+    @PostMapping(name = "posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PostResponseDTO> crearPost(
+        @Valid @RequestPart("post") PostRequestDTO requestDTO,
+        @RequestPart(value = "imagen", required = false) MultipartFile imagen
+        ) {
+        PostResponseDTO nuevoPost = postService.crearPost(requestDTO, imagen);
         return new ResponseEntity<>(nuevoPost, HttpStatus.CREATED);
     }
 
