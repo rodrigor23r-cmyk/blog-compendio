@@ -35,9 +35,7 @@ public class Categoria {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+ // quito el setter de id para que no se pueda modificar desde fuera de la clase
 
     public String getNombre() {
         return nombre;
