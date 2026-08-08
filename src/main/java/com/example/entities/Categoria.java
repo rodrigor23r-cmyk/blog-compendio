@@ -35,7 +35,7 @@ public class Categoria {
         return id;
     }
 
- // quito el setter de id para que no se pueda modificar desde fuera de la clase
+ // quito el setter de id para que no se pueda modificar desde fuera de la clased
 
     public String getNombre() {
         return nombre;

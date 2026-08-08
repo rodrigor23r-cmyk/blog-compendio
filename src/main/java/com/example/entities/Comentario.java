@@ -48,6 +48,10 @@ public class Comentario {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario autor;
 
+    //  le indica a JPA que antes de persistir el objeto en la base de datos, se debe ejecutar el método prePersist()
+    //  para establecer la fecha de creación del comentario.No al crear una instancia de Comentario, sino justo antes
+    //  de que se guarde en la base de datos, se asigna la fecha y hora actual a la propiedad fechaCreacion.
+    // Esto asegura que cada comentario tenga un registro preciso de cuándo fue creado.
     @PrePersist
     public void prePersist() {
         this.fechaCreacion = LocalDateTime.now();

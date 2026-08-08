@@ -132,6 +132,9 @@ public class PostServiceImpl implements PostService {
         // ¡EL CERROJO DE SEGURIDAD!
         verificarAutorOAdmin(post);
 
+        // 1. Incrementamos las visitas en la BBDD de forma atómica
+        postRepository.incrementarVisitas(id);
+
         return postMapper.toPostResponseDTO(post);
     }
 

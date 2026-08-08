@@ -29,8 +29,10 @@ import lombok.Setter;
  */
 @Entity
 @Table(name = "posts")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Post {
 
@@ -41,7 +43,7 @@ public class Post {
     @Column(nullable = false)
     private String titulo;
 
-    // AQUÍ ESTÁ EL TRUCO: columnDefinition = "TEXT" o "LONGTEXT" 
+    // AQUÍ ESTÁ EL TRUCO: columnDefinition = "TEXT" o "LONGTEXT"
     // permite guardar miles de caracteres con etiquetas HTML o Markdown
     @Column(nullable = false, columnDefinition = "TEXT")
     private String cuerpo;
@@ -67,16 +69,24 @@ public class Post {
     private List<Comentario> comentarios;
 
     // Relación N:M con Categorias
+    // la Clase Categoria no tiene referencia a Post para evitar recursividad
+    // infinita al serializar a JSON
     @ManyToMany
-    @JoinTable(
-        name = "post_categoria",
-        joinColumns = @JoinColumn(name = "post_id"),
-        inverseJoinColumns = @JoinColumn(name = "categoria_id")
-    )
-    private Set<Categoria> categorias; // Usar Set es mejor que List en ManyToMany para evitar problemas de rendimiento en Hibernate
-    
+    @JoinTable(name = "post_categoria", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "categoria_id"))
+    private Set<Categoria> categorias; // Usar Set es mejor que List en ManyToMany para evitar problemas de rendimiento
+                                       // en Hibernate
+    // No sé porqué no necesito inicializar el set de categorías.
+
+    @Builder.Default
+    @Column(name = "visitas", nullable = false)
+    private Integer visitas = 0;
+
+
+    // le indico a JPA que antes de persistir el objeto en la base de datos, se debe
+    // ejecutar el método prePersist()
     @PrePersist
     public void prePersist() {
         this.fechaCreacion = LocalDateTime.now();
     }
+
 }
